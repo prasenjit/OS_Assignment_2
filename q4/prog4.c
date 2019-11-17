@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <semaphore.h>
 #include <pthread.h>
+#include <unistd.h>
 
 sem_t mutexGlobal, mutexWriter;
 int data = 0, readerCount = 0;
 
-void *read(void *reader){
+void *reader_func(void *reader){
     sem_wait(&mutexGlobal);
     ++readerCount;
     if (readerCount == 1)
@@ -20,7 +21,7 @@ void *read(void *reader){
     sem_post(&mutexGlobal);
 }
 
-void *write(void *writer) {
+void *writer_func(void *writer) {
     sem_wait(&mutexWriter);
     ++data;
     printf("Writer: %d\t\tData Written: %d\n", ((int)writer), data);
@@ -36,21 +37,21 @@ int main(void) {
 
     int i;
     for (i = 0; i < 5; ++i) {
-        pthread_create(&writerId[i], NULL, write, (void *)i);
-        pthread_create(&readerId[i], NULL, read, (void *)i);
+        pthread_create(&writerId[i], NULL, writer_func, (void *)i);
+        pthread_create(&readerId[i], NULL, reader_func, (void *)i);
     }
 
 
-    // pthread_create(&writerId[0], NULL, write, (void *)0);
-    // pthread_create(&readerId[0], NULL, read, (void *)0);
-    // pthread_create(&readerId[1], NULL, read, (void *)1);
-    // pthread_create(&readerId[2], NULL, read, (void *)2);
-    // pthread_create(&writerId[1], NULL, write, (void *)1);
-    // pthread_create(&writerId[2], NULL, write, (void *)2);
-    // pthread_create(&readerId[3], NULL, read, (void *)3);
-    // pthread_create(&readerId[4], NULL, read, (void *)4);
-    // pthread_create(&writerId[3], NULL, write, (void *)3);
-    // pthread_create(&writerId[4], NULL, write, (void *)4);
+    // pthread_create(&writerId[0], NULL, writer_func, (void *)0);
+    // pthread_create(&readerId[0], NULL, reader_func, (void *)0);
+    // pthread_create(&readerId[1], NULL, reader_func, (void *)1);
+    // pthread_create(&readerId[2], NULL, reader_func, (void *)2);
+    // pthread_create(&writerId[1], NULL, writer_func, (void *)1);
+    // pthread_create(&writerId[2], NULL, writer_func, (void *)2);
+    // pthread_create(&readerId[3], NULL, reader_func, (void *)3);
+    // pthread_create(&readerId[4], NULL, reader_func, (void *)4);
+    // pthread_create(&writerId[3], NULL, writer_func, (void *)3);
+    // pthread_create(&writerId[4], NULL, writer_func, (void *)4);
 
     for (i = 0; i < 3; ++i) {
         pthread_join(writerId[i], NULL);
